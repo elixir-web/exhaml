@@ -8,7 +8,7 @@ defmodule ExhamlTest do
   end
 
   test "Exhaml.Compiler.compile test" do
-  	assert compile("%p asd") == nil
+  	assert compile("%p asd") == :mock
   end
 
 end
