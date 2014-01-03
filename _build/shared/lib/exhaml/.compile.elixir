@@ -1,3 +1,0 @@
-/home/alex/exhaml/_build/shared/lib/exhaml/ebin/Elixir.Exhaml.beam	Elixir.Exhaml	lib/exhaml.ex	Elixir.Application.Behaviour	Elixir.Exhaml	Elixir.Exhaml.Supervisor	Elixir.Kernel	Elixir.Module	elixir_def	elixir_module
-/home/alex/exhaml/_build/shared/lib/exhaml/ebin/Elixir.Exhaml.Supervisor.beam	Elixir.Exhaml.Supervisor	lib/exhaml/supervisor.ex	Elixir.Exhaml.Supervisor	Elixir.Kernel	Elixir.Module	Elixir.Supervisor.Behaviour	elixir_def	elixir_module	supervisor
-/home/alex/exhaml/_build/shared/lib/exhaml/ebin/Elixir.ExHaml.Generator.Html.beam	Elixir.ExHaml.Generator.Html	lib/exhaml/generator/html.ex	Elixir.Enum	Elixir.ExHaml.Generator.Html	Elixir.Kernel	Elixir.Keyword	Elixir.Module	Elixir.String.Chars	elixir_def	elixir_module	erlang
