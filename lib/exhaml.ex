@@ -6,4 +6,9 @@ defmodule Exhaml do
   def start(_type, _args) do
     Exhaml.Supervisor.start_link
   end
+
+  def compile(source) do
+    Exhaml.Compiler.compile(source)
+  end
+
 end
