@@ -4,4 +4,16 @@ defmodule ExHaml.Utils do
     c > 32
   end
 
+  def delete_last([]) do
+    []
+  end
+
+  def delete_last(nil) do
+    nil
+  end
+
+  def delete_last(list) do
+    Enum.reverse(list) |> tl |> Enum.reverse
+  end
+
 end
