@@ -18,45 +18,58 @@ defmodule Exhaml.Compiler do
   end
 
   @doc """
-    '/n' handling
+    '/n  ' handling
   """
-  def tokenize(<<10, source_rest :: binary>>, buffer) do
+  def tokenize(<<'\n', ' ', ' ', source_rest :: binary>>, buffer) do
+    tokenize(source_rest, :lists.append(buffer, [[:indentation]]))
+  end
+
+  def tokenize(<<' ', ' ', source_rest :: binary>>, buffer) do
     case List.last(buffer) do
       nil -> 
-        tokenize(source_rest, [["/n"]])
+        tokenize(source_rest, [["  "]])
       [:doctype, _] -> 
+        tokenize(source_rest, buffer)
+      [:indentation] -> 
+        tokenize(source_rest, :lists.append(buffer, [[:indentation]]))
+      [:comment] ->
         tokenize(source_rest, buffer)
       [{_, _, _}] ->
          tokenize(source_rest, buffer)
       [str] ->
-        tokenize(source_rest, :lists.append(delete_last(buffer), [[str <> "/n"]]))
+        tokenize(source_rest, :lists.append(delete_last(buffer), [[str <> " "]]))
     end
   end
 
-  @doc """
-    '/t' handling
-  """
-  def tokenize(<<9, source_rest :: binary>>, buffer) do
+  def tokenize(<<'\n', source_rest :: binary>>, buffer) do
     case List.last(buffer) do
       nil -> 
-        tokenize(source_rest, [["/t"]])
-      [:doctype, _] -> 
+        tokenize(source_rest, [["\n"]])
+      [:doctype, _] ->
+        tokenize(source_rest, buffer)
+      [:comment] ->
         tokenize(source_rest, buffer)
       [{_, _, _}] ->
-         tokenize(source_rest, buffer)
+        tokenize(source_rest, buffer)
+      [:indentation] ->
+        tokenize(source_rest, buffer)
       [str] ->
-        tokenize(source_rest, :lists.append(delete_last(buffer), [[str <> "/t"]]))
+        tokenize(source_rest, :lists.append(delete_last(buffer), [[str <> "\n"]]))
     end
   end
-
+  
   @doc """
     'space' handling
   """
-  def tokenize(<<32, source_rest :: binary>>, buffer) do
+  def tokenize(<<' ', source_rest :: binary>>, buffer) do
     case List.last(buffer) do
       nil -> 
         tokenize(source_rest, [[" "]])
-      [:doctype, _] -> 
+      [:doctype, _] ->
+        tokenize(source_rest, buffer)
+      [:comment] ->
+        tokenize(source_rest, buffer)
+      [:indentation] ->
         tokenize(source_rest, buffer)
       [{_, _, _}] ->
          tokenize(source_rest, buffer)
@@ -68,12 +81,14 @@ defmodule Exhaml.Compiler do
   @doc """
     '!!!' handling
   """
-  def tokenize(<<33, 33, 33, source_rest :: binary>>, buffer) do
+  def tokenize(<<'!', '!', '!', source_rest :: binary>>, buffer) do
     case List.last(buffer) do
       nil -> 
         tokenize(source_rest, [[:doctype, :doctype_xhtml_transitional]])
+      [:indentation] ->
+        tokenize(source_rest, :lists.append(buffer, [[:doctype, :doctype_xhtml_transitional]]))
       [:doctype, _] ->
-        tokenize(source_rest, :lists.append(buffer, [["!!!"]]))
+        tokenize(source_rest, :lists.append(buffer, [[:doctype, :doctype_xhtml_transitional]]))
       [{_,_,_}] ->
         tokenize(source_rest, :lists.append(buffer, [["!!!"]]))
       [str] ->
@@ -133,7 +148,16 @@ defmodule Exhaml.Compiler do
     -# handling
   """
   def tokenize(<<'-', '#', source_rest :: binary>>, buffer) do
+    tokenize(source_rest, :lists.append(buffer, [[:comment]]))
+  end
 
+  def tokenize(<<symbol, source_rest :: binary>>, buffer) do
+    case List.last(buffer) do
+      [:indentation] ->
+        tokenize(source_rest, buffer)
+      [:comment] ->
+        tokenize(source_rest, buffer)
+    end
   end
 
   @doc """
