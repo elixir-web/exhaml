@@ -3,175 +3,151 @@ defmodule Exhaml.Compiler do
   import ExHaml.Utils
     
   def compile(source) do
-    tokenize(source, [])
+    tokenize(String.split(source, "/n"), [])
   end
 
-  @todo """
-    1. Check spaces when after [{_,_,_}] ussual string.
-  """
-
-  @doc """
-    The end of tokenizer
-  """
-  def tokenize(<<>>, buffer) do
+  def tokenize([], buffer) do
     buffer
   end
 
-  @doc """
-    '/n  ' handling
-  """
-  def tokenize(<<'\n', ' ', ' ', source_rest :: binary>>, buffer) do
-    tokenize(source_rest, :lists.append(buffer, [[:indentation]]))
+  def tokenize([line | rest], buffer) do
+    # parse line
+    parsed_line = parse_line(line)
+    # accumulate line
+    #tokenize(rest, :lists.append(buffer, [parsed_line]))
   end
 
-  def tokenize(<<' ', ' ', source_rest :: binary>>, buffer) do
+  def parse_line(line) do
+    parse_line(line, [])
+  end
+
+  def parse_line(<<>>, buffer) do
+    buffer
+  end
+
+  def parse_line(<<'!', '!', '!', source_rest :: binary>>, buffer) do
     case List.last(buffer) do
       nil -> 
-        tokenize(source_rest, [["  "]])
-      [:doctype, _] -> 
-        tokenize(source_rest, buffer)
-      [:indentation] -> 
-        tokenize(source_rest, :lists.append(buffer, [[:indentation]]))
-      [:comment] ->
-        tokenize(source_rest, buffer)
-      [{_, _, _}] ->
-         tokenize(source_rest, buffer)
+        parse_line(source_rest, [[:doctype, :doctype_xhtml_transitional]])
+      [:indentation] ->
+        parse_line(source_rest, :lists.append(buffer, [[:doctype, :doctype_xhtml_transitional]]))
+      [:doctype, _] ->
+        parse_line(source_rest, :lists.append(buffer, [["!!!"]]))
+      {_,_,_} ->
+        parse_line(source_rest, :lists.append(buffer, [["!!!"]]))
       [str] ->
-        tokenize(source_rest, :lists.append(delete_last(buffer), [[str <> " "]]))
+        parse_line(source_rest, :lists.append(delete_last(buffer), [[str <> "!!!"]]))
     end
   end
 
-  def tokenize(<<'\n', source_rest :: binary>>, buffer) do
+  def parse_line(<<' ', ' ', source_rest :: binary>>, buffer) do
     case List.last(buffer) do
-      nil -> 
-        tokenize(source_rest, [["\n"]])
-      [:doctype, _] ->
-        tokenize(source_rest, buffer)
       [:comment] ->
-        tokenize(source_rest, buffer)
-      [{_, _, _}] ->
-        tokenize(source_rest, buffer)
+        parse_line(source_rest, buffer)
       [:indentation] ->
-        tokenize(source_rest, buffer)
+        parse_line(source_rest, :lists.append(buffer, [[:indentation]]))
       [str] ->
-        tokenize(source_rest, :lists.append(delete_last(buffer), [[str <> "\n"]]))
-    end
-  end
-  
-  @doc """
-    'space' handling
-  """
-  def tokenize(<<' ', source_rest :: binary>>, buffer) do
-    case List.last(buffer) do
-      nil -> 
-        tokenize(source_rest, [[" "]])
-      [:doctype, _] ->
-        tokenize(source_rest, buffer)
-      [:comment] ->
-        tokenize(source_rest, buffer)
-      [:indentation] ->
-        tokenize(source_rest, buffer)
-      [{_, _, _}] ->
-         tokenize(source_rest, buffer)
-      [str] ->
-        tokenize(source_rest, :lists.append(delete_last(buffer), [[str <> " "]]))
+        parse_line(source_rest, :lists.append(delete_last(buffer), [[str <> "  "]]))
+      _ ->
+        parse_line(source_rest, :lists.append(buffer, [[:indentation]]))
     end
   end
 
-  @doc """
-    '!!!' handling
-  """
-  def tokenize(<<'!', '!', '!', source_rest :: binary>>, buffer) do
+  def parse_line(<<' ', source_rest :: binary>>, buffer) do
     case List.last(buffer) do
       nil -> 
-        tokenize(source_rest, [[:doctype, :doctype_xhtml_transitional]])
-      [:indentation] ->
-        tokenize(source_rest, :lists.append(buffer, [[:doctype, :doctype_xhtml_transitional]]))
+        parse_line(source_rest, buffer)
       [:doctype, _] ->
-        tokenize(source_rest, :lists.append(buffer, [[:doctype, :doctype_xhtml_transitional]]))
-      [{_,_,_}] ->
-        tokenize(source_rest, :lists.append(buffer, [["!!!"]]))
-      [str] ->
-        tokenize(source_rest, :lists.append(delete_last(buffer), [[str <> " "]]))
+        parse_line(source_rest, buffer)
+      [:comment] ->
+        parse_line(source_rest, buffer)
+      _ ->
+        parse_line(source_rest, :lists.append(buffer, [[" "]]))
     end
   end
 
   @doc """
     '!!! Strict' handling
   """
-  def tokenize(<<'S', 't', 'r', 'i', 'c', 't', source_rest :: binary>>, buffer) do
+  def parse_line(<<'S', 't', 'r', 'i', 'c', 't', source_rest :: binary>>, buffer) do
     case List.last(buffer) do
       nil ->
-        tokenize(source_rest, [["Strict"]])
+        parse_line(source_rest, [["Strict"]])
+      [:indentation] ->
+        parse_line(source_rest, :lists.append(delete_last(buffer), [[:doctype, :doctype_xhtml_strict]]))
       [:doctype, _] ->
-        tokenize(source_rest, :lists.append(delete_last(buffer), [[:doctype, :doctype_xhtml_strict]]))
-      [{_, _, _}] ->
-        tokenize(source_rest, :lists.append(buffer, [["Strict"]]))
-      [str] ->
-        tokenize(source_rest, :lists.append(delete_last(buffer), [[str <> "Strict"]]))
+        parse_line(source_rest, :lists.append(delete_last(buffer), [[:doctype, :doctype_xhtml_strict]]))
+      _ ->
+        parse_line(source_rest, :lists.append(buffer, [["Strict"]]))
     end
   end
   
   @doc """
     '!!! Frameset' handling
   """
-  def tokenize(<<'F', 'r', 'r', 'a', 'm', 's', 'e', 't', source_rest :: binary>>, buffer) do
+  def parse_line(<<'F', 'r', 'r', 'a', 'm', 's', 'e', 't', source_rest :: binary>>, buffer) do
     case List.last(buffer) do
       nil ->
-        tokenize(source_rest, [["Frameset"]])
+        parse_line(source_rest, [["Frameset"]])
       [:doctype, _] ->
-        tokenize(source_rest, :lists.append(delete_last(buffer), [[:doctype, :doctype_xhtml_frameset]]))
-      [{_, _, _}] ->
-        tokenize(source_rest, :lists.append(buffer, [["Frameset"]]))
-      [str] ->
-        tokenize(source_rest, :lists.append(delete_last(buffer), [[str <> "Frameset"]]))
+        parse_line(source_rest, :lists.append(delete_last(buffer), [[:doctype, :doctype_xhtml_frameset]]))
+      _ ->
+        parse_line(source_rest, :lists.append(buffer, [["Frameset"]]))
     end
   end
 
   @doc """
-    '!!! 5' handling
+    '5' symbol handling
   """
-  def tokenize(<<'5', source_rest :: binary>>, buffer) do
+  def parse_line(<<'5', source_rest :: binary>>, buffer) do
     case List.last(buffer) do
       nil ->
-        tokenize(source_rest, [["5"]])
+        parse_line(source_rest, [["5"]])
       [:doctype, _] ->
-        tokenize(source_rest, :lists.append(delete_last(buffer), [[:doctype, :doctype_html5]]))
-      [{_, _, _}] ->
-        tokenize(source_rest, :lists.append(buffer, [["5"]]))
-      [str] ->
-        tokenize(source_rest, :lists.append(delete_last(buffer), [[str <> "5"]]))
+        parse_line(source_rest, :lists.append(delete_last(buffer), [[:doctype, :doctype_html5]]))
+      _ ->
+        parse_line(source_rest, :lists.append(buffer, [["5"]]))
     end
   end
-  
+
   @doc """
-    -# handling
+    '-#' handling
   """
-  def tokenize(<<'-', '#', source_rest :: binary>>, buffer) do
-    tokenize(source_rest, :lists.append(buffer, [[:comment]]))
+  def parse_line(<<'-', '#', source_rest :: binary>>, buffer) do
+    parse_line(source_rest, :lists.append(buffer, [[:comment]]))
   end
 
-  def tokenize(<<symbol, source_rest :: binary>>, buffer) do
+  @doc """
+   '%' handling
+  """
+  def parse_line(<<'%', source_rest :: binary>>, buffer) do
     case List.last(buffer) do
+      nil ->
+        parse_line(source_rest, :lists.append(buffer, [{}]))
       [:indentation] ->
-        tokenize(source_rest, buffer)
-      [:comment] ->
-        tokenize(source_rest, buffer)
+        parse_line(source_rest, :lists.append(buffer, [{}]))
+      [_] ->
+        parse_line(source_rest, :lists.append(buffer, [{}]))
+      _ ->
+        parse_line(source_rest, :lists.append(buffer, [["%"]]))
     end
   end
 
   @doc """
-    '%' handling
+    any symbol handling
   """
-  #def tokenize(<<37, source_rest :: binary>>, buffer) do
-  #  case is_next_is_symbol(source_rest) do
-  #      true ->
-  #          # create new tag
-  #          tokenize(source_rest, :lists.append([{}], buffer))
-  #      false ->
-  #          # plain text
-  #          tokenize(source_rest, :lists.append([{}], buffer))
-  #  end
-  #end
+  def parse_line(<<symbol, source_rest :: binary>>, buffer) do
+    case List.last(buffer) do
+      [:comment] ->
+        parse_line(source_rest, buffer)
+      {} ->
+        parse_line(source_rest, :lists.append(delete_last(buffer), [{:erlang.list_to_binary([symbol]), [], []}]))
+      {tag, attr, opts} ->
+        parse_line(source_rest, :lists.append(delete_last(buffer), [{tag <> :erlang.list_to_binary([symbol]), attr, opts}]))
+      _ ->
+        parse_line(source_rest, :lists.append(buffer, [[:erlang.list_to_binary([symbol])]]))
+
+    end
+  end
 
 end
