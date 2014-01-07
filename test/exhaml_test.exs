@@ -38,5 +38,10 @@ defmodule ExhamlTest do
     assert compile("   test  ") == [[:indentation], [" "], ["t"], ["e"], ["s"], ["t  "]]
     assert compile("  %div test  ") == [[:indentation], {"div", [], []}, [" "], ["t"], ["e"], ["s"], ["t  "]] 
   end
+
+  test "Parse tag with attributes" do
+    assert compile("%div{test=>test}") == [{"div", [{"test", "=>", "test"}], []}]
+    assert compile("  %div{test=>test}") == [[:indentation], {"div", [{"test", "=>", "test"}], []}]
+  end
   
 end
