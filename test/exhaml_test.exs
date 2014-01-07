@@ -29,5 +29,14 @@ defmodule ExhamlTest do
     assert compile("    %div  ") ==  [[:indentation], [:indentation], {"div", [], []}, [:indentation]]
     assert compile("     %div  ") ==  [[:indentation], [:indentation], [" "], {"div", [], []}, [:indentation]]     
   end
+
+  test "Parse text" do
+    assert compile("test") == [["t"], ["e"], ["s"], ["t"]]
+    assert compile("  test") == [[:indentation], ["t"], ["e"], ["s"], ["t"]]
+    assert compile("   test") == [[:indentation], [" "], ["t"], ["e"], ["s"], ["t"]]
+    assert compile("   test ") == [[:indentation], [" "], ["t"], ["e"], ["s"], ["t"], [" "]]
+    assert compile("   test  ") == [[:indentation], [" "], ["t"], ["e"], ["s"], ["t  "]]
+    assert compile("  %div test  ") == [[:indentation], {"div", [], []}, [" "], ["t"], ["e"], ["s"], ["t  "]] 
+  end
   
 end
