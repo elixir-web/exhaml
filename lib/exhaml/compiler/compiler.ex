@@ -134,9 +134,51 @@ defmodule Exhaml.Compiler do
   end
 
   @doc """
+    '{' handling
+  """
+  def parse_line(<<'{', source_rest :: binary>>, buffer) do
+    case List.last(buffer) do
+      {tag, attr, opts} ->
+        parse_line(source_rest, :lists.append(delete_last(buffer), [{tag, [{"", "", ""}], []}]))
+      _ ->
+        parse_line(source_rest, :lists.append(buffer, [["{"]]))
+    end
+  end
+
+  @doc """
+    '}' handling
+  """
+  def parse_line(<<'}', source_rest :: binary>>, buffer) do
+    case List.last(buffer) do
+      {tag, attr, opts} ->
+        parse_line(source_rest, buffer)
+      _ ->
+        parse_line(source_rest, :lists.append(buffer, [["}"]]))
+    end
+  end
+
+  @doc """
+    '=>' handling
+  """
+  def parse_line(<<'=', '>', source_rest :: binary>>, buffer) do
+    case List.last(buffer) do
+      nil ->
+        parse_line(source_rest, :lists.append(buffer, [["=>"]]))
+      {tag, attr, opts} ->
+        {key, bind, val} = List.last(attr)
+        new_opts = :lists.append(delete_last(attr), {key, "=>", val})
+        parse_line(source_rest, :lists.append(delete_last(buffer), [tag, new_opts, opts]))
+      _ ->
+        parse_line(source_rest, :lists.append(buffer, [["=>"]]))
+    end
+  end
+
+  @doc """
     any symbol handling
   """
   def parse_line(<<symbol, source_rest :: binary>>, buffer) do
+
+    # [{"div", [{"", "", ""}], []}]
     case List.last(buffer) do
       [:comment] ->
         parse_line(source_rest, buffer)
