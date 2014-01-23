@@ -66,7 +66,7 @@ defmodule Exhaml.Compiler do
       {tag, [], opts} ->
         parse_line(source_rest, :lists.append(buffer, [[" "]]))
       {tag, attr, opts} ->
-        parse_line(source_rest, :lists.append(buffer, [[" "]])) 
+        parse_line(source_rest, buffer)
       _ ->
         parse_line(source_rest, :lists.append(buffer, [[" "]]))
     end
