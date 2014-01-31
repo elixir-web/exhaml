@@ -7,8 +7,8 @@ defmodule Exhaml do
     Exhaml.Supervisor.start_link
   end
 
-  def compile(source) do
-    Exhaml.Compiler.compile(source)
+  def render(source) do
+    compiled = Exhaml.Compiler.compile(source)
   end
 
 end

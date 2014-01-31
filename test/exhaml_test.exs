@@ -7,48 +7,48 @@ defmodule ExhamlTest do
     assert(true)
   end
 
-  #test "Exhaml doctype test" do
-  #  assert parse_line("!!! Strict  ", []) == [[:doctype, :doctype_xhtml_strict], [:indentation]]
-  #  assert parse_line("  !!! Strict", []) == [[:indentation], [:doctype, :doctype_xhtml_strict]]
-  #  assert parse_line("!!! 5  ", []) == [[:doctype, :doctype_html5], [:indentation]]
-  #  assert parse_line("!!! 5  -#  asdsfg", []) == [[:doctype, :doctype_html5], [:indentation], [:comment]]
-  #  assert parse_line("!!! 5  -#    asdsfg", []) == [[:doctype, :doctype_html5], [:indentation], [:comment]]
-  #  assert parse_line("!!! 5   -# asdsfg", []) == [[:doctype, :doctype_html5], [:indentation], [" "], [:comment]]
-  #end
+  test "Exhaml doctype test" do
+    assert parse_line("!!! Strict  ", []) == [[:doctype, :doctype_xhtml_strict], [:indentation]]
+    assert parse_line("  !!! Strict", []) == [[:indentation], [:doctype, :doctype_xhtml_strict]]
+    assert parse_line("!!! 5  ", []) == [[:doctype, :doctype_html5], [:indentation]]
+    assert parse_line("!!! 5  -#  asdsfg", []) == [[:doctype, :doctype_html5], [:indentation], [:comment]]
+    assert parse_line("!!! 5  -#    asdsfg", []) == [[:doctype, :doctype_html5], [:indentation], [:comment]]
+    assert parse_line("!!! 5   -# asdsfg", []) == [[:doctype, :doctype_html5], [:indentation], [" "], [:comment]]
+  end
 
-  #test "Exhaml tag test" do
-  #  assert parse_line("%p", []) == [{"p", [], []}]
-  #  assert parse_line("%div", []) == [{"div", [], []}]
-  #  assert parse_line("%div ", []) == [{"div", [], []}, [" "]]
-  #  assert parse_line("%div  ", []) == [{"div", [], []}]
-  #  assert parse_line("%div   ", []) == [{"div", [], []}, [" "]]
-  #  assert parse_line(" %div   ", []) == [{"div", [], []}, [" "]]
-  #  assert parse_line("  %div", []) ==  [[:indentation], {"div", [], []}]
-  #  assert parse_line("  %div", []) ==  [[:indentation], {"div", [], []}]
-  #  assert parse_line("  %div  ", []) ==  [[:indentation], {"div", [], []}]
-  #  assert parse_line("    %div  ", []) ==  [[:indentation], [:indentation], {"div", [], []}]
-  #  assert parse_line("     %div  ", []) ==  [[:indentation], [:indentation], [" "], {"div", [], []}]     
-  #end
+  test "Exhaml tag test" do
+    assert parse_line("%p", []) == [{"p", [], []}]
+    assert parse_line("%div", []) == [{"div", [], []}]
+    assert parse_line("%div ", []) == [{"div", [], []}, [" "]]
+    assert parse_line("%div  ", []) == [{"div", [], []}]
+    assert parse_line("%div   ", []) == [{"div", [], []}, [" "]]
+    assert parse_line(" %div   ", []) == [{"div", [], []}, [" "]]
+    assert parse_line("  %div", []) ==  [[:indentation], {"div", [], []}]
+    assert parse_line("  %div", []) ==  [[:indentation], {"div", [], []}]
+    assert parse_line("  %div  ", []) ==  [[:indentation], {"div", [], []}]
+    assert parse_line("    %div  ", []) ==  [[:indentation], [:indentation], {"div", [], []}]
+    assert parse_line("     %div  ", []) ==  [[:indentation], [:indentation], [" "], {"div", [], []}]     
+  end
 
-  #test "Parse text" do
-  #  assert parse_line("test", []) == [["t"], ["e"], ["s"], ["t"]]
-  #  assert parse_line("  test", []) == [[:indentation], ["t"], ["e"], ["s"], ["t"]]
-  #  assert parse_line("   test", []) == [[:indentation], [" "], ["t"], ["e"], ["s"], ["t"]]
-  #  assert parse_line("   test ", []) == [[:indentation], [" "], ["t"], ["e"], ["s"], ["t"], [" "]]
-  #  assert parse_line("   test  ", []) == [[:indentation], [" "], ["t"], ["e"], ["s"], ["t  "]]
-  #  assert parse_line("  %div test  ", []) == [[:indentation], {"div", [], []}, [" "], ["t"], ["e"], ["s"], ["t  "]] 
-  #end
+  test "Parse text" do
+    assert parse_line("test", []) == [["t"], ["e"], ["s"], ["t"]]
+    assert parse_line("  test", []) == [[:indentation], ["t"], ["e"], ["s"], ["t"]]
+    assert parse_line("   test", []) == [[:indentation], [" "], ["t"], ["e"], ["s"], ["t"]]
+    assert parse_line("   test ", []) == [[:indentation], [" "], ["t"], ["e"], ["s"], ["t"], [" "]]
+    assert parse_line("   test  ", []) == [[:indentation], [" "], ["t"], ["e"], ["s"], ["t  "]]
+    assert parse_line("  %div test  ", []) == [[:indentation], {"div", [], []}, [" "], ["t"], ["e"], ["s"], ["t  "]] 
+  end
 
-  #test "Parse tag with attributes" do
-  #  assert parse_line("%div{test=>test}", []) == [{"div", [{"test", "=>", "test"}], []}, [" "]]
-  #  assert parse_line("  %div{test=>test}", []) == [[:indentation], {"div", [{"test", "=>", "test"}], []}, [" "]]
-  #  assert parse_line("   %div{ test=>test}", []) == [[:indentation], [" "], {"div", [{"test", "=>", "test"}], []}, [" "]]
-  #  assert parse_line("%div{  test=>test}", []) == [{"div", [{"test", "=>", "test"}], []}, [" "]]
-  #  assert parse_line("%div{  test=>test   }", []) == [{"div", [{"test", "=>", "test"}], []}, [" "]]
-  #  assert parse_line("%div{ test => test, test2 => test2 }", []) == [{"div", [{"test", "=>", "test"}, {"test2", "=>", "test2"}], []}, [" "]]
-  #  assert parse_line("%div{ test => test, test2 => test2,  test3 =>  test3 }", []) == [{"div", [{"test", "=>", "test"}, {"test2", "=>", "test2"}, {"test3", "=>", "test3"}], []}, [" "]]
-  #  assert parse_line("asd %div{ test => test, test2 => test2,  test3 =>  test3 } test", []) == [["a"], ["s"], ["d"], [" "], {"div", [{"test", "=>", "test"}, {"test2", "=>", "test2"}, {"test3", "=>", "test3"}], []}, [" "], [" "], ["t"], ["e"], ["s"], ["t"]]
-  #end
+  test "Parse tag with attributes" do
+    assert parse_line("%div{test=>test}", []) == [{"div", [{"test", "=>", "test"}], []}, [" "]]
+    assert parse_line("  %div{test=>test}", []) == [[:indentation], {"div", [{"test", "=>", "test"}], []}, [" "]]
+    assert parse_line("   %div{ test=>test}", []) == [[:indentation], [" "], {"div", [{"test", "=>", "test"}], []}, [" "]]
+    assert parse_line("%div{  test=>test}", []) == [{"div", [{"test", "=>", "test"}], []}, [" "]]
+    assert parse_line("%div{  test=>test   }", []) == [{"div", [{"test", "=>", "test"}], []}, [" "]]
+    assert parse_line("%div{ test => test, test2 => test2 }", []) == [{"div", [{"test", "=>", "test"}, {"test2", "=>", "test2"}], []}, [" "]]
+    assert parse_line("%div{ test => test, test2 => test2,  test3 =>  test3 }", []) == [{"div", [{"test", "=>", "test"}, {"test2", "=>", "test2"}, {"test3", "=>", "test3"}], []}, [" "]]
+    assert parse_line("asd %div{ test => test, test2 => test2,  test3 =>  test3 } test", []) == [["a"], ["s"], ["d"], [" "], {"div", [{"test", "=>", "test"}, {"test2", "=>", "test2"}, {"test3", "=>", "test3"}], []}, [" "], [" "], ["t"], ["e"], ["s"], ["t"]]
+  end
 
   def test1 do
     """
