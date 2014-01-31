@@ -3,18 +3,18 @@ defmodule Exhaml.Compiler do
   import ExHaml.Utils
 
   def compile(source) do
-    tokenize(String.split(source, "/n"), [])
+    tokenize(String.split(source, "\n"), [])
   end
 
   def tokenize([], buffer) do
     buffer
   end
 
-  def tokenize([line | _rest], _buffer) do
+  def tokenize([line | rest], buffer) do
     # parse line
-    _parsed_line = parse_line(line)
+    parsed_line = parse_line(line)
     # accumulate line
-    #tokenize(rest, :lists.append(buffer, [parsed_line]))
+    tokenize(rest, :lists.append(buffer, [parsed_line]))
   end
 
   def parse_line(line) do
