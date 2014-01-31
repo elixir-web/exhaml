@@ -1,7 +1,7 @@
 defmodule Exhaml.Compiler do
 
   import ExHaml.Utils
-    
+
   def compile(source) do
     tokenize(String.split(source, "/n"), [])
   end
@@ -10,9 +10,9 @@ defmodule Exhaml.Compiler do
     buffer
   end
 
-  def tokenize([line | rest], buffer) do
+  def tokenize([line | _rest], _buffer) do
     # parse line
-    parsed_line = parse_line(line)
+    _parsed_line = parse_line(line)
     # accumulate line
     #tokenize(rest, :lists.append(buffer, [parsed_line]))
   end
@@ -27,7 +27,7 @@ defmodule Exhaml.Compiler do
 
   def parse_line(<<"!", "!", "!", source_rest :: binary>>, buffer) do
     case List.last(buffer) do
-      nil -> 
+      nil ->
         parse_line(source_rest, [[:doctype, :doctype_xhtml_transitional]])
       [:indentation] ->
         parse_line(source_rest, :lists.append(buffer, [[:doctype, :doctype_xhtml_transitional]]))
@@ -48,7 +48,7 @@ defmodule Exhaml.Compiler do
         parse_line(source_rest, :lists.append(buffer, [[:indentation]]))
       [str] ->
         parse_line(source_rest, :lists.append(delete_last(buffer), [[str <> "  "]]))
-      {tag, attr, opts} ->
+      {_tag, _attr, _opts} ->
         parse_line(source_rest, buffer)
       _ ->
         parse_line(source_rest, :lists.append(buffer, [[:indentation]]))
@@ -57,15 +57,15 @@ defmodule Exhaml.Compiler do
 
   def parse_line(<<" ", source_rest :: binary>>, buffer) do
     case List.last(buffer) do
-      nil -> 
+      nil ->
         parse_line(source_rest, buffer)
       [:doctype, _] ->
         parse_line(source_rest, buffer)
       [:comment] ->
         parse_line(source_rest, buffer)
-      {tag, [], opts} ->
+      {_tag, [], _opts} ->
         parse_line(source_rest, :lists.append(buffer, [[" "]]))
-      {tag, attr, opts} ->
+      {_tag, _attr, _opts} ->
         parse_line(source_rest, buffer)
       _ ->
         parse_line(source_rest, :lists.append(buffer, [[" "]]))
@@ -87,7 +87,7 @@ defmodule Exhaml.Compiler do
         parse_line(source_rest, :lists.append(buffer, [["Strict"]]))
     end
   end
-  
+
   @doc """
     "!!! Frameset" handling
   """
@@ -144,7 +144,7 @@ defmodule Exhaml.Compiler do
   """
   def parse_line(<<"{", source_rest :: binary>>, buffer) do
     case List.last(buffer) do
-      {tag, attr, opts} ->
+      {tag, _attr, _opts} ->
         parse_line(source_rest, :lists.append(delete_last(buffer), [{tag, [{"", "", ""}], []}]))
       _ ->
         parse_line(source_rest, :lists.append(buffer, [["{"]]))
@@ -156,7 +156,7 @@ defmodule Exhaml.Compiler do
   """
   def parse_line(<<"}", source_rest :: binary>>, buffer) do
     case List.last(buffer) do
-      {tag, attr, opts} ->
+      {_tag, _attr, _opts} ->
         parse_line(source_rest, :lists.append(buffer, [[" "]]))
       _ ->
         parse_line(source_rest, :lists.append(buffer, [["}"]]))
@@ -171,7 +171,7 @@ defmodule Exhaml.Compiler do
       nil ->
         parse_line(source_rest, :lists.append(buffer, [["=>"]]))
       {tag, attr, opts} ->
-        {key, bind, val} = List.last(attr)
+        {key, _bind, val} = List.last(attr)
         new_opts = :lists.append(delete_last(attr), [{key, "=>", val}])
         parse_line(source_rest, :lists.append(delete_last(buffer), [{tag, new_opts, opts}]))
       _ ->
@@ -194,7 +194,7 @@ defmodule Exhaml.Compiler do
         attr = :lists.append(attr, [{"", "", ""}])
         parse_line(source_rest, :lists.append(delete_last(buffer), [{tag, attr, opts}]))
       _ ->
-        parse_line(source_rest, :lists.append(buffer, [[:erlang.list_to_binary([","])]]))   
+        parse_line(source_rest, :lists.append(buffer, [[:erlang.list_to_binary([","])]]))
     end
   end
 
@@ -214,7 +214,7 @@ defmodule Exhaml.Compiler do
           {key, "=>", val} ->
             attr = :lists.append(delete_last(attr), [{key, "=>", val <> :erlang.list_to_binary([symbol])}])
             parse_line(source_rest, :lists.append(delete_last(buffer), [{tag, attr, opts}]))
-          {key, bind, val} -> 
+          {key, bind, val} ->
             attr = :lists.append(delete_last(attr), [{key <> :erlang.list_to_binary([symbol]), bind, val}])
             parse_line(source_rest, :lists.append(delete_last(buffer), [{tag, attr, opts}]))
         end
